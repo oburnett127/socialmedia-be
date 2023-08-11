@@ -2,11 +2,13 @@ package com.oburnett127.socialmedia.config;
 
 import lombok.RequiredArgsConstructor;
 import java.util.Arrays;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,31 +20,31 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.security.config.Customizer;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity()
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 
-    private JwtAuthenticationFilter jwtAuthFilter;
-    private final AuthenticationProvider authenticationProvider;
+    @Autowired
+    private JwtAuthFilter authFilter;
 
-  @Bean
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
             .cors(Customizer.withDefaults()) 
             .csrf(csrf->csrf.disable())
             .authorizeHttpRequests(auth -> {
-                auth.requestMatchers("/auth/login", "/auth/signup", "/csrf-token").permitAll()
+                auth.requestMatchers("/auth/login", "/auth/signup", "/job/list", "/employer/list", "/csrf-token").permitAll()
                     .anyRequest().authenticated();
             })
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authenticationProvider(authenticationProvider)
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
             .build();
     }
 

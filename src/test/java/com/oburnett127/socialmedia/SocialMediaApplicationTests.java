@@ -1,10 +1,10 @@
-package com.oburnett127.jobsearch;
+package com.oburnett127.socialmedia;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class JobsearchApplicationTests {
+class socialmediaApplicationTests {
 
     @Test
     void contextLoads() {

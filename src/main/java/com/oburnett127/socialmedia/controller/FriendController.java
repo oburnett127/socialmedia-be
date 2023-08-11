@@ -5,7 +5,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import com.oburnett127.socialmedia.model.Friend;
 import com.oburnett127.socialmedia.model.FriendStatus;
-import com.oburnett127.socialmedia.model.User;
+import com.oburnett127.socialmedia.model.UserInfo;
 import com.oburnett127.socialmedia.model.request.DeleteFriendRequest;
 import com.oburnett127.socialmedia.model.request.RequestFriendRequest;
 import com.oburnett127.socialmedia.model.request.FriendStatusRequest;
@@ -34,26 +34,26 @@ public class FriendController {
     }
 
     @GetMapping("/getbyuserid/{userId}")
-    public ResponseEntity<List<User>> getFriendsByUserId(@Validated @PathVariable String userId) {
+    public ResponseEntity<List<UserInfo>> getFriendsByUserId(@Validated @PathVariable String userId) {
         System.out.println("inside getFriendByUserId() $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ --------------------");
         final List<Integer> friendUserIds = friendService.getFriendUserIds(Integer.parseInt(userId));
-        final List<User> friendUsers = userService.getUsers(friendUserIds);
+        final List<UserInfo> friendUsers = userService.getUsers(friendUserIds);
         return ResponseEntity.ok().body(friendUsers);
     }
 
     @GetMapping("/getoutgoingrequests/{fromUserId}")
-    public ResponseEntity<List<User>> getOutgoingRequestsByUserId(@Validated @PathVariable String fromUserId) {
+    public ResponseEntity<List<UserInfo>> getOutgoingRequestsByUserId(@Validated @PathVariable String fromUserId) {
         System.out.println("inside getOutgoingRequestsByUserId() $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ --------------------");
         final List<Integer> toUserIds = friendService.getOutgoingRequestsByUserId(Integer.parseInt(fromUserId));
-        final List<User> requestUsers = userService.getUsers(toUserIds);
+        final List<UserInfo> requestUsers = userService.getUsers(toUserIds);
         return ResponseEntity.ok().body(requestUsers);
     }
 
     @GetMapping("/getincomingrequests/{toUserId}")
-    public ResponseEntity<List<User>> getIncomingRequestsByUserId(@Validated @PathVariable String toUserId) {
+    public ResponseEntity<List<UserInfo>> getIncomingRequestsByUserId(@Validated @PathVariable String toUserId) {
         System.out.println("inside getIncomingRequestsByUserId() $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ --------------------");
         final List<Integer> fromUserIds = friendService.getIncomingRequestsByUserId(Integer.parseInt(toUserId));
-        final List<User> requestUsers = userService.getUsers(fromUserIds);
+        final List<UserInfo> requestUsers = userService.getUsers(fromUserIds);
         return ResponseEntity.ok().body(requestUsers);
     }
 

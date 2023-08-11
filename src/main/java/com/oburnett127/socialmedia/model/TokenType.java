@@ -1,5 +1,5 @@
-package com.oburnett127.socialmedia.model;
+// package com.oburnett127.socialmedia.model;
 
-public enum TokenType {
-  BEARER
-}
+// public enum TokenType {
+//   BEARER
+// }

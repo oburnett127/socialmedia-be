@@ -6,15 +6,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.oburnett127.socialmedia.model.Role;
-import com.oburnett127.socialmedia.model.Token;
-import com.oburnett127.socialmedia.model.TokenType;
-import com.oburnett127.socialmedia.model.User;
+import com.oburnett127.socialmedia.model.UserInfo;
 import com.oburnett127.socialmedia.model.request.AuthenticationRequest;
 import com.oburnett127.socialmedia.model.request.RegisterRequest;
 import com.oburnett127.socialmedia.model.response.AuthenticationResponse;
-import com.oburnett127.socialmedia.repository.TokenRepository;
-import com.oburnett127.socialmedia.repository.UserRepository;
+import com.oburnett127.socialmedia.repository.UserInfoRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,28 +19,27 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
 
-  private final UserRepository userRepository;
-  private final TokenRepository tokenRepository;
+  private final UserInfoRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final AuthenticationManager authenticationManager;
 
   @SneakyThrows
   public AuthenticationResponse register(RegisterRequest request) {
-    var user = User.builder()
+    var user = UserInfo.builder()
         .email(request.getEmail())
         .password(passwordEncoder.encode(request.getPassword()))
         .firstName(request.getFirstName())
         .lastName(request.getLastName())
-        .role(Role.USER)
+        .roles("USER")
         .build();
         
-    var savedUser = userRepository.save(user);
-    var jwtToken = jwtService.generateToken(user);
-    saveUserToken(savedUser, jwtToken);
+    userRepository.save(user);
+    var jwtToken = jwtService.generateToken(user.getEmail());
+    //saveUserToken(savedUser, jwtToken);
 
     return AuthenticationResponse.builder()
-        .token(jwtToken)
+        .token(jwtToken.toString())
         .build();
   }
 
@@ -58,57 +53,57 @@ public class UserService {
     );
     var user = userRepository.findByEmail(request.getEmail())
         .orElseThrow();
-    var jwtToken = jwtService.generateToken(user);
-    revokeAllUserTokens(user);
-    saveUserToken(user, jwtToken);
+    var jwtToken = jwtService.generateToken(user.getEmail());
+    //revokeAllUserTokens(user);
+    //saveUserToken(user, jwtToken);
     return AuthenticationResponse.builder()
-        .token(jwtToken)
+        .token(jwtToken.toString())
         .build();
   }
 
-  private void saveUserToken(User user, String jwtToken) {
-    var token = Token.builder()
-        .user(user)
-        .token(jwtToken)
-        .tokenType(TokenType.BEARER)
-        .expired(false)
-        .revoked(false)
-        .build();
-    tokenRepository.save(token);
-  }
+  // private void saveUserToken(User user, String jwtToken) {
+  //   var token = Token.builder()
+  //       .user(user)
+  //       .token(jwtToken)
+  //       .tokenType(TokenType.BEARER)
+  //       .expired(false)
+  //       .revoked(false)
+  //       .build();
+  //   tokenRepository.save(token);
+  // }
 
-  private void revokeAllUserTokens(User user) {
-    var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
-    if (validUserTokens.isEmpty())
-      return;
-    validUserTokens.forEach(token -> {
-      token.setExpired(true);
-      token.setRevoked(true);
-    });
-    tokenRepository.saveAll(validUserTokens);
-  }
+  // private void revokeAllUserTokens(User user) {
+  //   var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
+  //   if (validUserTokens.isEmpty())
+  //     return;
+  //   validUserTokens.forEach(token -> {
+  //     token.setExpired(true);
+  //     token.setRevoked(true);
+  //   });
+  //   tokenRepository.saveAll(validUserTokens);
+  // }
 
   @SneakyThrows
-  public Role getRoleByUserId(int userId) {
-    Optional<User> user = userRepository.findById(userId);
-    User account = user.get();
-    return account.getRole();
+  public String getRoleByUserId(int userId) {
+    Optional<UserInfo> user = userRepository.findById(userId);
+    UserInfo account = user.get();
+    return account.getRoles();
   }
 
   @SneakyThrows
   public int getUserIdByEmail(String emailAddress) {
-    Optional<User> user = userRepository.findByEmail(emailAddress);
+    Optional<UserInfo> user = userRepository.findByEmail(emailAddress);
     int userId = user.get().getId();
     return userId;
   }
 
   @SneakyThrows
-  public Optional<User> getUserByEmail(String emailAddress) {
+  public Optional<UserInfo> getUserByEmail(String emailAddress) {
     return userRepository.findByEmail(emailAddress);
   }
 
   @SneakyThrows
-  public List<User> getUserByName(String name) {
+  public List<UserInfo> getUserByName(String name) {
     String[] nameParts = name.split(" ");
 
     if(nameParts.length == 2) {
@@ -117,7 +112,7 @@ public class UserService {
       return userRepository.findByFullName(firstName, lastName);
     } else if(nameParts.length == 1) {
       String providedName = nameParts[0];
-      List<User> matchingUsers = userRepository.findByFirstName(providedName);
+      List<UserInfo> matchingUsers = userRepository.findByFirstName(providedName);
       matchingUsers.addAll(userRepository.findByLastName(providedName));
       return matchingUsers;
     }
@@ -126,7 +121,7 @@ public class UserService {
   }
 
   @SneakyThrows
-  public List<User> getUsers(List<Integer> userIds) {
+  public List<UserInfo> getUsers(List<Integer> userIds) {
     return userIds.stream()
                 .map(userId -> userRepository.findById(userId))
                 .filter(Optional::isPresent)
@@ -135,7 +130,7 @@ public class UserService {
   }
   
   @SneakyThrows
-  public Optional<User> getUserByUserId(int userId) {
+  public Optional<UserInfo> getUserByUserId(int userId) {
     return userRepository.findById(userId);
   }
 }

@@ -5,18 +5,18 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import com.oburnett127.socialmedia.model.User;
+import com.oburnett127.socialmedia.model.UserInfo;
 
-public interface UserRepository extends JpaRepository<User, Integer> {
+public interface UserInfoRepository extends JpaRepository<UserInfo, Integer> {
   
-  Optional<User> findByEmail(String email);
+  Optional<UserInfo> findByEmail(String email);
 
   @Query("SELECT u FROM User u WHERE u.firstName = :firstName AND u.lastName = :lastName")
-  List<User> findByFullName(@Param("firstName") String firstName, @Param("lastName") String lastName);
+  List<UserInfo> findByFullName(@Param("firstName") String firstName, @Param("lastName") String lastName);
 
   @Query("SELECT u FROM User u WHERE u.firstName = :firstName")
-  List<User> findByFirstName(@Param("firstName") String firstName);
+  List<UserInfo> findByFirstName(@Param("firstName") String firstName);
   
   @Query("SELECT u FROM User u WHERE u.lastName = :lastName")
-  List<User> findByLastName(@Param("lastName") String lastName);
+  List<UserInfo> findByLastName(@Param("lastName") String lastName);
 }
