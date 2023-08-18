@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "_user")
+@Table(name = "userinfo")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class UserInfo {
   @Builder.Default

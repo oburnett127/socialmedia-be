@@ -37,6 +37,7 @@ public class JwtService {
     private Claims extractAllClaims(String token) {
         return Jwts
                 .parserBuilder()
+                .setAllowedClockSkewSeconds(30000)
                 .setSigningKey(getSignKey())
                 .build()
                 .parseClaimsJws(token)

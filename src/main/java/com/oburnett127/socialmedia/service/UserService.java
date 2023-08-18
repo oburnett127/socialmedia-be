@@ -45,22 +45,33 @@ public class UserService {
 
   @SneakyThrows
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
-    authenticationManager.authenticate(
+    UserInfo user = null;
+    String jwtToken = null;
+  
+    try {
+      authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(
             request.getEmail(),
             request.getPassword()
         )
-    );
-    var user = userRepository.findByEmail(request.getEmail())
-        .orElseThrow();
-    var jwtToken = jwtService.generateToken(user.getEmail());
+      );
+      user = userRepository.findByEmail(request.getEmail())
+          .orElseThrow();
+      jwtToken = jwtService.generateToken(user.getEmail());
+    } catch(Exception e) {
+      System.out.println("Exception occurred in UserService.authenticate() - exception: " + e.getMessage());
+      AuthenticationResponse response = null;
+      return response;
+    }
+  
     //revokeAllUserTokens(user);
     //saveUserToken(user, jwtToken);
+  
     return AuthenticationResponse.builder()
-        .token(jwtToken.toString())
+        .token(jwtToken)
         .build();
   }
-
+  
   // private void saveUserToken(User user, String jwtToken) {
   //   var token = Token.builder()
   //       .user(user)

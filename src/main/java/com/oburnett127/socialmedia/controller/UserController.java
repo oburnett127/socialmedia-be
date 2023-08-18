@@ -1,9 +1,9 @@
 package com.oburnett127.socialmedia.controller;
 
 import lombok.RequiredArgsConstructor;
-
 import java.util.List;
 import java.util.Optional;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.oburnett127.socialmedia.model.UserInfo;
 import com.oburnett127.socialmedia.model.request.AuthenticationRequest;
 import com.oburnett127.socialmedia.model.request.RegisterRequest;
@@ -44,7 +43,9 @@ public class UserController {
   public ResponseEntity<AuthenticationResponse> authenticate(
     @RequestBody AuthenticationRequest request) {
     System.out.println("$$$$$$$$$$$$ ----------- inside UserController.authenticate");
-    return ResponseEntity.ok(userService.authenticate(request));
+    AuthenticationResponse response = userService.authenticate(request);
+    if(response == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+    else return ResponseEntity.status(200).body(response);
   }
 
   @GetMapping("/getrolebyuserid/{userId}")
@@ -61,10 +62,12 @@ public class UserController {
     return ResponseEntity.ok().body(userId);
   }
 
-  @GetMapping(value = "/getuserbyemail/{email}", produces = "application/json")
+  @GetMapping(value = "/getuserbyemail/{email}")
   public ResponseEntity<UserInfo> getUserByEmail(@Validated @PathVariable String email) {
     System.out.println("$$$$$$$$$$$$ ----------- inside UserController.getUserByEmail");
+    //System.out.println("email: " + email);
     final var user = userService.getUserByEmail(email);
+    //System.out.println("user.get() returned: " + user.get());
     return ResponseEntity.ok().body(user.get());
   }
 
