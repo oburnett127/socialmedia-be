@@ -7,8 +7,12 @@ import com.oburnett127.socialmedia.model.FriendStatus;
 import com.oburnett127.socialmedia.model.request.FriendStatusRequest;
 import com.oburnett127.socialmedia.model.request.RequestFriendRequest;
 import com.oburnett127.socialmedia.repository.FriendRepository;
+
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,25 +39,24 @@ public class FriendService {
         }
     }
 
-    @SneakyThrows
     public List<Integer> getFriendUserIds(int userId) {
-        List<Friend> friendRecs = friendRepository.findByFromUserId(userId);
-        friendRecs.addAll(friendRepository.findByToUserId(userId));
+        Set<Integer> friendUserIds = new HashSet<>();
 
-        List<Integer> friendUserIds = friendRecs.stream()
-                                .filter(friend -> friend.getFromUserId() == userId && friend.getStatus() == FriendStatus.FRIEND)
-                                .map(friend -> friend.getToUserId())
-                                .collect(Collectors.toList());
+        List<Friend> friendRecsFrom = friendRepository.findByFromUserId(userId);
+        friendRecsFrom.stream()
+                .filter(friend -> friend.getStatus() == FriendStatus.FRIEND)
+                .forEach(friend -> friendUserIds.add(friend.getToUserId()));
 
-        List<Integer> friendFromUserIds = friendRecs.stream()
-                                .filter(friend -> friend.getToUserId() == userId && friend.getStatus() == FriendStatus.FRIEND)
-                                .map(friend -> friend.getFromUserId())
-                                .collect(Collectors.toList());
+        List<Friend> friendRecsTo = friendRepository.findByToUserId(userId);
+        friendRecsTo.stream()
+                .filter(friend -> friend.getStatus() == FriendStatus.FRIEND)
+                .forEach(friend -> friendUserIds.add(friend.getFromUserId()));
 
-        friendUserIds.addAll(friendFromUserIds);
+        friendUserIds.remove(userId);
 
-        return friendUserIds;
+        return new ArrayList<>(friendUserIds);
     }
+
 
     @SneakyThrows
     public List<Integer> getOutgoingRequestsByUserId(int fromUserId) {
