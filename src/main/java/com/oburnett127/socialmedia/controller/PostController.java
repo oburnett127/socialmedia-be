@@ -1,5 +1,6 @@
 package com.oburnett127.socialmedia.controller;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -67,6 +68,7 @@ public class PostController {
                 .text(postCreateRequest.getText())
                 .build();
         service.createPost(post);
+
         return ResponseEntity.ok().body(null);
     }
 }

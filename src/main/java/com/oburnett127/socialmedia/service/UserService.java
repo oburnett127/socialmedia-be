@@ -2,10 +2,18 @@ package com.oburnett127.socialmedia.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.amqp.core.AmqpAdmin;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.oburnett127.socialmedia.SocialmediaApplication;
+import com.oburnett127.socialmedia.messaging.MessageConsumerService;
 import com.oburnett127.socialmedia.model.UserInfo;
 import com.oburnett127.socialmedia.model.request.AuthenticationRequest;
 import com.oburnett127.socialmedia.model.request.RegisterRequest;
@@ -23,6 +31,11 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final AuthenticationManager authenticationManager;
+  private final AmqpAdmin amqpAdmin;
+  private final TopicExchange topicExchange;
+
+  @Autowired
+  private MessageConsumerService messageConsumerService;
 
   @SneakyThrows
   public AuthenticationResponse register(RegisterRequest request) {
@@ -33,15 +46,26 @@ public class UserService {
         .lastName(request.getLastName())
         .roles("USER")
         .build();
-        
     userRepository.save(user);
+    createUserQueue(user.getId());
     var jwtToken = jwtService.generateToken(user.getEmail());
-    //saveUserToken(savedUser, jwtToken);
-
     return AuthenticationResponse.builder()
         .token(jwtToken.toString())
         .build();
   }
+
+  public void createUserQueue(int userId) {
+    String queueName = "user_queue_" + userId;
+    Queue queue = new Queue(queueName, true, false, false);
+
+    amqpAdmin.declareExchange(topicExchange);
+    amqpAdmin.declareQueue(queue);
+
+    Binding binding = BindingBuilder.bind(queue).to(topicExchange).with(SocialmediaApplication.ROUTING_KEY_PREFIX + userId);
+    amqpAdmin.declareBinding(binding);
+
+    messageConsumerService.startListeningToQueue(queueName);
+}
 
   @SneakyThrows
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
