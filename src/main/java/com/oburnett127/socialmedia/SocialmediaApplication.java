@@ -3,9 +3,12 @@ package com.oburnett127.socialmedia;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.TopicExchange;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -24,5 +27,10 @@ public class SocialmediaApplication {
     @Bean
     public TopicExchange declareExchange() {
         return new TopicExchange(EXCHANGE_NAME);
+    }
+
+    @Bean
+    public AmqpAdmin amqpAdmin(ConnectionFactory connectionFactory) {
+        return new RabbitAdmin(connectionFactory);
     }
 }

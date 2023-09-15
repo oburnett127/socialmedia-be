@@ -12,8 +12,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import com.oburnett127.socialmedia.SocialmediaApplication;
-import com.oburnett127.socialmedia.messaging.MessageConsumerService;
 import com.oburnett127.socialmedia.model.UserInfo;
 import com.oburnett127.socialmedia.model.request.AuthenticationRequest;
 import com.oburnett127.socialmedia.model.request.RegisterRequest;
@@ -35,7 +38,7 @@ public class UserService {
   private final TopicExchange topicExchange;
 
   @Autowired
-  private MessageConsumerService messageConsumerService;
+  private ConnectionFactory connectionFactory;
 
   @SneakyThrows
   public AuthenticationResponse register(RegisterRequest request) {
@@ -47,25 +50,37 @@ public class UserService {
         .roles("USER")
         .build();
     userRepository.save(user);
-    createUserQueue(user.getId());
+    createUserQueue(user.getId(), connectionFactory);
     var jwtToken = jwtService.generateToken(user.getEmail());
     return AuthenticationResponse.builder()
         .token(jwtToken.toString())
         .build();
   }
 
-  public void createUserQueue(int userId) {
+  public void createUserQueue(int userId, ConnectionFactory connectionFactory) {
     String queueName = "user_queue_" + userId;
     Queue queue = new Queue(queueName, true, false, false);
 
     amqpAdmin.declareExchange(topicExchange);
     amqpAdmin.declareQueue(queue);
 
-    Binding binding = BindingBuilder.bind(queue).to(topicExchange).with(SocialmediaApplication.ROUTING_KEY_PREFIX + userId);
+    Binding binding = BindingBuilder.bind(queue).to(topicExchange)
+                                    .with(SocialmediaApplication.ROUTING_KEY_PREFIX + userId);
     amqpAdmin.declareBinding(binding);
 
-    messageConsumerService.startListeningToQueue(queueName);
-}
+    SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+    container.setConnectionFactory(connectionFactory);
+    container.setQueueNames(queueName);
+
+    MessageListenerAdapter adapter = new MessageListenerAdapter(new Object() {
+        public void handleMessage(String message) {
+            System.out.println("Received message: " + message);
+        }
+    });
+
+    container.setMessageListener(adapter);
+    container.start();
+  }
 
   @SneakyThrows
   public AuthenticationResponse authenticate(AuthenticationRequest request) {

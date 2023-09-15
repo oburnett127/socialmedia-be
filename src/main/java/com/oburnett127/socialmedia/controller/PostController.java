@@ -1,6 +1,5 @@
 package com.oburnett127.socialmedia.controller;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -61,7 +60,7 @@ public class PostController {
 
     @PostMapping("/create")
     public ResponseEntity<Post> createPost(@Validated @RequestBody PostCreateRequest postCreateRequest ) throws IOException {
-        System.out.println("inside PostController.createPost() $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ --------------------");
+        System.out.println("inside PostController.createPost() +-+-+-+-&&&&&&&&&&&&&&&&&&+_+_+_+_+_+_+_+_+_+_+_+_+_+_+");
         final Post post = Post.builder()
                 .authorUserId(postCreateRequest.getAuthorUserId())
                 .profileUserId(postCreateRequest.getProfileUserId())

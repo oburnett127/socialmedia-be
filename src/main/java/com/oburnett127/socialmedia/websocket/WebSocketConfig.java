@@ -1,35 +1,31 @@
-package com.oburnett127.socialmedia.websocket;
+// package com.oburnett127.socialmedia.websocket;
 
-import java.util.concurrent.CopyOnWriteArrayList;
+// import org.apache.logging.log4j.LogManager;
+// import org.apache.logging.log4j.Logger;
+// import org.springframework.context.annotation.Bean;
+// import org.springframework.context.annotation.Configuration;
+// import org.springframework.web.socket.WebSocketHandler;
+// import org.springframework.web.socket.config.annotation.EnableWebSocket;
+// import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
+// import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
-import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+// use this for the new websocket implementation
+// @Configuration
+// @EnableWebSocket
+// public class WebSocketConfig implements WebSocketConfigurer {
+//     private static final Logger logger = LogManager.getLogger(WebSocketConfig.class);
 
-import com.oburnett127.socialmedia.messaging.MessageConsumerService;
+//     @Override
+//     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+//         logger.debug("WebSocketConfig.registerWebSocketHandlers() called.");
+//         System.out.println("WebSocketConfig.registerWebSocketHandlers() called.");
+//         registry.addHandler(myHandler(), "/myHandler").setAllowedOrigins("http://localhost:3000");
+//     }
 
-@Configuration
-@EnableWebSocket
-public class WebSocketConfig implements WebSocketConfigurer {
-
-    private MessageConsumerService messageConsumerService;
-
-    public WebSocketConfig(MessageConsumerService messageConsumerService) {
-        this.messageConsumerService = messageConsumerService;
-    }
-
-    @Override
-    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new NotificationHandler(messageConsumerService), "/notifications")
-                .setAllowedOrigins("*");
-    }
-
-    @Bean
-    public CopyOnWriteArrayList<WebSocketSession> webSocketSessions() {
-        return new CopyOnWriteArrayList<>();
-    }
-}
-
+//     @Bean
+//     public WebSocketHandler myHandler() {
+//         logger.debug("WebSocketConfig.myHandler() called.");
+//         System.out.println("WebSocketConfig.myHandler() called.");
+//         return (WebSocketHandler) new MyHandler();
+//     }
+// }
