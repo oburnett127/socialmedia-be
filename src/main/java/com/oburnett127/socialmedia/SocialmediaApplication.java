@@ -18,7 +18,7 @@ import org.springframework.amqp.core.TopicExchange;
 public class SocialmediaApplication {
 
     public static final String EXCHANGE_NAME = "post_exchange";
-    public static final String ROUTING_KEY_PREFIX = "user.";
+    public static final String ROUTING_KEY_PREFIX = "user_queue_";
 
     public static void main(String[] args) {
         SpringApplication.run(SocialmediaApplication.class, args);

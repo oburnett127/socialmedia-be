@@ -2,8 +2,6 @@ package com.oburnett127.socialmedia.service;
 
 import lombok.SneakyThrows;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.oburnett127.socialmedia.model.Post;
@@ -52,7 +50,8 @@ public class PostService {
         List<Integer> friendUserIds = friendService.getFriendUserIds(post.getAuthorUserId());
 
         for (int userId : friendUserIds) {
-            String queueName = "user." + userId;
+            String queueName = "user_queue_" + userId;
+            System.out.println("queue name is: " + queueName);
             rabbitTemplate.convertAndSend("post_exchange", queueName, message);
         }
     }
